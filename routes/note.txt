@@ -1,0 +1,5 @@
+const logActivity = require('../../middleware/logActivity');
+
+await logActivity(req, userId, 'Invite Co-host', {
+    details: `Co-host invite to ${cohost.user.email}`,
+});

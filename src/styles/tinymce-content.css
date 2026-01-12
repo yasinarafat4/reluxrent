@@ -1,0 +1,15 @@
+@import url('/tinymce/skins/content/default/content.min.css');
+
+.tinymce-content {
+  all: initial; /* optional: reset everything first */
+  font-family: Arial, sans-serif;
+}
+
+.tinymce-content h1,
+.tinymce-content p,
+.tinymce-content ul,
+.tinymce-content ol,
+.tinymce-content img,
+.tinymce-content table {
+  all: unset;
+}

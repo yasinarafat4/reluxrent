@@ -1,0 +1,106 @@
+<html lang='en'>
+  <head>
+    <meta charset='UTF-8' />
+    <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+    <title>{{subject}}</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: #f7f7f7;
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        color: #222;
+      }
+      .container {
+        max-width: 600px;
+        margin: 40px auto;
+        background-color: #fff;
+        border-radius: 10px;
+        overflow: hidden;
+        border: 1px solid #eee;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+      }
+      .header {
+        padding: 10px 30px;
+        border-bottom: 1px solid #eee;
+      }
+      .header img {
+        height: 50px;
+      }
+      .content {
+        padding: 30px;
+      }
+      h1 {
+        font-size: 25px;
+        margin-bottom: 10px;
+      }
+      h2 {
+        font-size: 22px;
+        margin-bottom: 10px;
+      }
+      p {
+        font-size: 16px;
+        line-height: 1.6;
+        margin: 8px 0;
+      }
+      .link {
+        margin-top: 10px;
+        color: #ff385c;
+        text-decoration: none;
+        font-weight: 600;
+      }
+      .link:hover {
+        color: #e03151;
+      }
+      .note {
+        color: #888;
+        font-size: 14px;
+        margin-top: 12px;
+      }
+      .footer {
+        text-align: start;
+        padding: 30px;
+        color: #666;
+        font-size: 13px;
+      }
+      .app-links img {
+        height: 36px;
+        margin: 10px 4px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class='container'>
+      <div class='header'>
+        <img src='https://reluxrent.com/images/logos/reluxrent.png' alt='Reluxrent' />
+      </div>
+
+      <div class='content'>
+        <h2>{{subject}}</h2>
+        <p>Hi {{name}},</p>
+        <p>
+          You requested to verify your email
+          <strong>{{email}}</strong>.
+        </p>
+        <p>Click the link below to verify:</p>
+        <a href='{{link}}' class='link'>Verify Email</a>
+
+        <p class='note'>⚠️ This link will expire in 1 hour for your security.</p>
+        <p>If you didn't request this, you can safely ignore this email.</p>
+      </div>
+
+      <div class='footer'>
+        <p>Thanks,<br />The Reluxrent Team</p>
+        <hr style='color: #eee;' />
+        <div class='app-links'>
+          <p style='font-weight: 600;'>Get the Reluxrent app</p>
+          <a href='#'><img src='https://reluxrent.com/images/logos/app-store.png' alt='App Store' /></a>
+          <a href='#'><img src='https://reluxrent.com/images/logos/google-play.png' alt='Google Play' /></a>
+        </div>
+        <p style='margin-top: 16px; font-size: 12px; font-weight: 500;'>
+          <a href='https://reluxrent.com/help/privacy-policy' style='color:#ff385c; text-decoration:none;'>View Reluxrent's Privacy Policy</a>
+        </p>
+      </div>
+    </div>
+  </body>
+</html>

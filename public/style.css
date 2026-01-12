@@ -1,0 +1,228 @@
+/* Base (mobile-first) */
+.tinymce-content h1 {
+  font-size: 1.75rem; /* 28px */
+  line-height: 2.25rem; /* 36px */
+  font-weight: 700;
+}
+.tinymce-content h1 span {
+  font-size: 1.75rem; /* 28px */
+  line-height: 2.25rem; /* 36px */
+  font-weight: 700;
+}
+
+.tinymce-content h2 {
+  font-size: 1.5rem; /* 24px */
+  line-height: 2rem; /* 32px */
+  font-weight: 700;
+}
+.tinymce-content h2 span {
+  font-size: 1.5rem; /* 24px */
+  line-height: 2rem; /* 32px */
+  font-weight: 700;
+}
+
+.tinymce-content h3 {
+  font-size: 1.25rem; /* 20px */
+  line-height: 1.75rem; /* 28px */
+  font-weight: 600;
+}
+.tinymce-content h3 span {
+  font-size: 1.25rem; /* 20px */
+  line-height: 1.75rem; /* 28px */
+  font-weight: 600;
+}
+
+.tinymce-content h4 {
+  font-size: 1.125rem; /* 18px */
+  line-height: 1.5rem; /* 24px */
+  font-weight: 600;
+}
+.tinymce-content h4 span {
+  font-size: 1.125rem; /* 18px */
+  line-height: 1.5rem; /* 24px */
+  font-weight: 600;
+}
+
+.tinymce-content h5 {
+  font-size: 1rem; /* 16px */
+  line-height: 1.5rem; /* 24px */
+  font-weight: 500;
+}
+.tinymce-content h5 span {
+  font-size: 1rem; /* 16px */
+  line-height: 1.5rem; /* 24px */
+  font-weight: 500;
+}
+
+.tinymce-content h6 {
+  font-size: 0.875rem; /* 14px */
+  line-height: 1.25rem; /* 20px */
+  font-weight: 500;
+}
+
+.tinymce-content h6 span {
+  font-size: 0.875rem; /* 14px */
+  line-height: 1.25rem; /* 20px */
+  font-weight: 500;
+}
+
+.tinymce-content p {
+  font-size: 1rem; /* 16px */
+  line-height: 1.5rem; /* 24px */
+  font-weight: 400;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.tinymce-content p span {
+  font-size: 1rem; /* 16px */
+  line-height: 1.5rem; /* 24px */
+  font-weight: 400;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.tinymce-content span {
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.tinymce-content a:-webkit-any-link {
+  color: -webkit-link;
+  cursor: pointer;
+  text-decoration: underline;
+}
+.tinymce-content ul,
+ol {
+  margin: 0;
+  padding-left: 1.25rem; /* 20px */
+  font-size: 1rem; /* 16px */
+  line-height: 1.5rem; /* 24px */
+  color: #333;
+}
+
+.tinymce-content li {
+  margin-bottom: 0.75rem; /* Space between list items */
+}
+
+.tinymce-content ol {
+  list-style-type: decimal;
+}
+
+/* Unordered lists (ul) bullet style */
+.tinymce-content ul {
+  list-style-type: disc;
+}
+
+.tinymce-content .mce-accordion {
+  border: 1px solid #c0c0cc;
+  border-radius: 5px;
+  padding: 8px;
+  margin: 5px;
+}
+
+.tinymce-content .mce-accordion summary {
+  background: #f8fafc;
+  cursor: pointer;
+  padding: 5px;
+}
+
+/* / Make table rows block-level on small screens for better responsiveness / */
+
+.tinymce-content table,
+.tinymce-content table td,
+.tinymce-content table th {
+  border: 1px solid #cbd5e1 !important;
+  padding: 0.75rem !important;
+}
+
+.tinymce-content table {
+  border-collapse: collapse !important;
+  width: 100% !important;
+}
+
+.tinymce-content table tr {
+  position: relative !important;
+  margin-bottom: 0.5rem !important;
+  max-width: 100% !important;
+  border-width: 1px !important;
+  border-color: #cbd5e1 !important;
+}
+
+/* Medium devices (min-width: 768px) */
+@media (min-width: 768px) {
+  .tinymce-content h1 {
+    font-size: 2.25rem; /* 36px */
+    line-height: 2.5rem; /* 40px */
+  }
+  .tinymce-content h1 span {
+    font-size: 2.25rem; /* 36px */
+    line-height: 2.5rem; /* 40px */
+  }
+
+  .tinymce-content h2 {
+    font-size: 1.875rem; /* 30px */
+    line-height: 2.25rem; /* 36px */
+  }
+  .tinymce-content h2 span {
+    font-size: 1.875rem; /* 30px */
+    line-height: 2.25rem; /* 36px */
+  }
+
+  .tinymce-content h3 {
+    font-size: 1.5rem; /* 24px */
+    line-height: 2rem; /* 32px */
+  }
+  .tinymce-content h3 span {
+    font-size: 1.5rem; /* 24px */
+    line-height: 2rem; /* 32px */
+  }
+
+  .tinymce-content h4 {
+    font-size: 1.25rem; /* 20px */
+    line-height: 1.75rem; /* 28px */
+  }
+
+  .tinymce-content h4 span {
+    font-size: 1.25rem; /* 20px */
+    line-height: 1.75rem; /* 28px */
+  }
+
+  .tinymce-content h5 {
+    font-size: 1rem; /* 16px */
+    line-height: 1.5rem; /* 24px */
+  }
+  .tinymce-content h5 span {
+    font-size: 1rem; /* 16px */
+    line-height: 1.5rem; /* 24px */
+  }
+
+  .tinymce-content h6 {
+    font-size: 0.875rem; /* 14px */
+    line-height: 1.25rem; /* 20px */
+  }
+  .tinymce-content h6 span {
+    font-size: 0.875rem; /* 14px */
+    line-height: 1.25rem; /* 20px */
+  }
+
+  .tinymce-content p {
+    font-size: 1.125rem; /* 18px */
+    line-height: 1.75rem; /* 28px */
+  }
+  .tinymce-content p span {
+    font-size: 1.125rem; /* 18px */
+    line-height: 1.75rem; /* 28px */
+  }
+
+  .tinymce-content ul,
+  ol {
+    font-size: 1.125rem; /* 18px */
+    line-height: 1.75rem; /* 28px */
+  }
+
+  .tinymce-content li {
+    margin-bottom: 1rem; /* Increase space for larger screens */
+  }
+}

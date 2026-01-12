@@ -1,0 +1,1260 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["debian-openssl-1.1.x", "native", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Role {
+  id          Int          @id @default(autoincrement())
+  name        String       @unique
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  permissions Permission[] @relation("RolePermission")
+  Admin       Admin[]
+
+  @@map("roles")
+}
+
+model Permission {
+  id        Int      @id @default(autoincrement())
+  action    String
+  resource  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  roles     Role[]   @relation("RolePermission")
+
+  @@unique([action, resource], name: "action_resource")
+  @@map("permissions")
+}
+
+model Admin {
+  id                String             @id @default(cuid())
+  roleId            Int
+  name              String
+  email             String             @unique
+  phone             String             @unique
+  password          String
+  status            Boolean            @default(true)
+  avatar            String?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  role              Role               @relation(fields: [roleId], references: [id], onDelete: NoAction)
+  adminActivityLogs AdminActivityLog[]
+
+  @@map("admins")
+}
+
+model AdminActivityLog {
+  id         Int       @id @default(autoincrement())
+  adminId    String
+  action     String // e.g. "create", "update", "delete", "login", "password_reset"
+  resource   String? // e.g. "Order", "Product", "User"
+  resourceId String? // id of resource affected
+  message    String? // human readable summary
+  changes    Json? // optional diffs: { before: {...}, after: {...} }
+  meta       Json? // additional context (IP, userAgent, route, params)
+  createdAt  DateTime  @default(now())
+  deletedAt  DateTime? // soft delete support
+  admin      Admin     @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@index([adminId])
+  @@index([action])
+  @@index([resource, resourceId])
+  @@index([createdAt])
+  @@map("admin_activity_log")
+}
+
+model User {
+  id                      String                    @id @default(cuid())
+  name                    String?
+  preferredName           String?
+  dob                     DateTime?
+  email                   String?                   @unique
+  password                String?
+  emailVerified           DateTime?
+  fcmToken                String?
+  image                   String?
+  phone                   String?                   @unique
+  about                   String?                   @db.Text
+  dreamPlace              String?
+  funFact                 String?
+  myWork                  String?
+  obsessedWith            String?
+  school                  String?
+  address                 String?
+  languages               Json?
+  isHost                  Boolean                   @default(false)
+  hostAt                  DateTime?
+  guestFee                Decimal?                  @default(0.00) @db.Decimal(12, 6)
+  hostFee                 Decimal?                  @default(0.00) @db.Decimal(12, 6)
+  isVerified              Boolean                   @default(false)
+  isBanned                Boolean                   @default(false)
+  isDeactivated           Boolean                   @default(false)
+  googleId                String?                   @unique
+  appleId                 String?                   @unique
+  createdAt               DateTime                  @default(now())
+  updatedAt               DateTime                  @updatedAt
+  deletedAt               DateTime?
+  wallet                  Wallet[]
+  property                Property[]
+  host                    Booking[]                 @relation("Host")
+  guest                   Booking[]                 @relation("Guest")
+  messageSender           ConversationMessage[]     @relation("MessageSender")
+  reviewsSent             Reviews[]                 @relation("ReviewSender")
+  reviewsReceived         Reviews[]                 @relation("ReviewReceiver")
+  notification            Notification[]
+  conversationParticipant ConversationParticipant[]
+  messageRead             MessageRead[]
+  passwordToken           PasswordToken[]
+  propertyCoHost          PropertyCoHost[]
+  wishlist                Wishlist[]
+  recentlyViewed          RecentlyViewed[]
+  userVerification        UserVerification?
+  payoutMethods           PayoutMethods[]
+  payouts                 Payouts[]
+  activityLog             ActivityLog[]
+  payments                Payment[]
+
+  @@map("users")
+}
+
+model PayoutMethods {
+  id            Int      @id @default(autoincrement())
+  userId        String
+  countryId     Int?
+  method        String?
+  bankName      String?
+  accountHolder String?
+  accNumber     String?
+  swiftCode     String?
+  branchName    String?
+  branchCity    String?
+  payoutAmount  Decimal? @default(0.00) @db.Decimal(12, 6)
+  isDefault     Boolean  @default(false)
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  country   Country?  @relation(fields: [countryId], references: [id])
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  payouts   Payouts[]
+
+  @@map("payout_methods")
+}
+
+enum payoutStatus {
+  PENDING
+  SENT
+}
+
+model Payouts {
+  id             String       @id @default(cuid())
+  userId         String
+  bookingId      String       @unique
+  currencyId     Int
+  payoutMethodId Int?
+  payoutAmount   Decimal      @default(0.00) @db.Decimal(12, 6)
+  payoutStatus   payoutStatus @default(PENDING)
+  payoutDate     DateTime?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  payoutMethod PayoutMethods? @relation(fields: [payoutMethodId], references: [id], onDelete: Cascade)
+  currency     Currency       @relation(fields: [currencyId], references: [id], onDelete: Cascade)
+  booking      Booking?       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@map("payouts")
+}
+
+enum documentType {
+  Passport
+  DrivingLicense
+  GovernmentId
+}
+
+model UserVerification {
+  id           Int           @id @default(autoincrement())
+  userId       String        @unique
+  countryId    Int?
+  name         String?
+  idNumber     String?
+  dob          DateTime?
+  documentType documentType?
+  selfie       String?
+  front        String?
+  back         String?
+  passport     String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  country Country? @relation(fields: [countryId], references: [id])
+
+  @@map("user_verifications")
+}
+
+model Session {
+  id        String   @id
+  sid       String   @unique
+  data      Json
+  expiresAt DateTime
+}
+
+model PasswordToken {
+  id        String    @id @default(cuid())
+  userId    String
+  token     String    @unique
+  type      String
+  expiresAt DateTime?
+  used      Boolean   @default(false)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("password_tokens")
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+model ActivityLog {
+  id        Int      @id @default(autoincrement())
+  userId    String?
+  adminId   String?
+  action    String
+  ipAddress String?
+  userAgent String?
+  meta      Json?
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([action])
+  @@map("activity_logs")
+}
+
+model Otp {
+  phone     String   @id
+  code      String
+  createdAt DateTime @default(now())
+
+  @@map("otps")
+}
+
+model Wallet {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  currency  String?
+  balance   Decimal? @db.Decimal(12, 6)
+  status    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("wallets")
+}
+
+model Language {
+  id              Int      @id @default(autoincrement())
+  name            String
+  code            String   @unique
+  defaultLanguage Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("languages")
+}
+
+model Translation {
+  id        Int      @id @default(autoincrement())
+  key       String
+  locale    String
+  value     String?  @db.LongText
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("translations")
+}
+
+model Country {
+  id               Int                @id @default(autoincrement())
+  name             String
+  iso3             String?            @db.Char(3)
+  iso2             String?            @db.Char(2)
+  phonecode        String?
+  currency         String?
+  currency_name    String?
+  currency_symbol  String?
+  latitude         Decimal?           @db.Decimal(12, 6)
+  longitude        Decimal?           @db.Decimal(12, 6)
+  status           Boolean            @default(true)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  state            State[]
+  city             City[]
+  propertyAddress  PropertyAddress[]
+  userVerification UserVerification[]
+  payoutMethods    PayoutMethods[]
+
+  @@map("countries")
+}
+
+model State {
+  id        Int      @id @default(autoincrement())
+  name      String
+  latitude  Decimal? @db.Decimal(10, 8)
+  longitude Decimal? @db.Decimal(12, 6)
+  status    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  countryId Int
+
+  country         Country           @relation(fields: [countryId], references: [id], onDelete: Cascade)
+  cities          City[]
+  PropertyAddress PropertyAddress[]
+
+  @@index([countryId])
+  @@map("states")
+}
+
+model City {
+  id              Int      @id @default(autoincrement())
+  name            String
+  latitude        Decimal  @db.Decimal(12, 6)
+  longitude       Decimal  @db.Decimal(12, 6)
+  status          Boolean  @default(true)
+  popularCity     Boolean  @default(false)
+  popularCitySort Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  state           State             @relation(fields: [stateId], references: [id], onDelete: Cascade)
+  stateId         Int
+  country         Country           @relation(fields: [countryId], references: [id], onDelete: Cascade)
+  countryId       Int
+  propertyAddress PropertyAddress[]
+
+  @@index([stateId])
+  @@index([countryId])
+  @@map("cities")
+}
+
+model Currency {
+  id                Int      @id @default(autoincrement())
+  code              String   @db.VarChar(3)
+  name              String   @db.VarChar(50)
+  symbol            String?  @db.VarChar(5)
+  decimalPlaces     Int?
+  decimalSeparator  String?  @db.VarChar(10)
+  thousandSeparator String?  @db.VarChar(10)
+  exchangeRate      Decimal? @db.Decimal(12, 6)
+  status            Boolean  @default(true)
+  defaultCurrency   Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  propertyPrice PropertyPrice[]
+  bookings      Booking[]
+  payouts       Payouts[]
+
+  @@map("currencies")
+}
+
+model HelpCategory {
+  id                      Int                       @id @default(autoincrement())
+  slug                    String                    @unique
+  sort                    Int                       @default(0)
+  createdAt               DateTime                  @default(now())
+  updatedAt               DateTime                  @updatedAt
+  helpCategoryTranslation HelpCategoryTranslation[]
+  help                    Help[]
+
+  @@map("help_categories")
+}
+
+model HelpCategoryTranslation {
+  id             Int          @id @default(autoincrement())
+  locale         String
+  title          String?
+  seoTitle       String?
+  seoDescription String?      @db.Text
+  canonical      String?
+  seoImage       String?
+  structuredData Json?
+  helpCategoryId Int
+  helpCategory   HelpCategory @relation(fields: [helpCategoryId], references: [id], onDelete: Cascade)
+
+  @@unique([helpCategoryId, locale])
+  @@map("help_category_translations")
+}
+
+model Help {
+  id              Int               @id @default(autoincrement())
+  slug            String            @unique
+  image           String?
+  status          Boolean
+  helpCategoryId  Int
+  helpCategory    HelpCategory      @relation(fields: [helpCategoryId], references: [id], onDelete: Cascade)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  helpTranslation HelpTranslation[]
+
+  @@map("helps")
+}
+
+model HelpTranslation {
+  id             Int     @id @default(autoincrement())
+  locale         String
+  title          String?
+  content        String? @db.LongText
+  seoTitle       String?
+  seoDescription String? @db.Text
+  canonical      String?
+  seoImage       String?
+  structuredData Json?
+  helpId         Int
+  help           Help    @relation(fields: [helpId], references: [id], onDelete: Cascade)
+
+  @@unique([helpId, locale])
+  @@map("help_translations")
+}
+
+model Page {
+  id              Int               @id @default(autoincrement())
+  slug            String            @unique
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  pageTranslation PageTranslation[]
+
+  @@map("pages")
+}
+
+model PageTranslation {
+  id             Int     @id @default(autoincrement())
+  locale         String
+  title          String
+  content        String? @db.LongText
+  seoTitle       String?
+  seoDescription String? @db.Text
+  canonical      String?
+  seoImage       String?
+  structuredData Json?
+  pageId         Int
+  page           Page    @relation(fields: [pageId], references: [id], onDelete: Cascade)
+
+  @@unique([pageId, locale])
+  @@map("page_translations")
+}
+
+model Faq {
+  id             Int              @id @default(autoincrement())
+  order          Int?             @default(0)
+  status         Boolean
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  faqTranslation FaqTranslation[]
+
+  @@map("faqs")
+}
+
+model FaqTranslation {
+  id       Int     @id @default(autoincrement())
+  locale   String
+  question String?
+  answer   String? @db.LongText
+  faqId    Int
+  faq      Faq     @relation(fields: [faqId], references: [id], onDelete: Cascade)
+
+  @@unique([faqId, locale])
+  @@map("faq_translations")
+}
+
+model Contact {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String
+  subject   String
+  message   String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("contacts")
+}
+
+model Settings {
+  id        Int      @id @default(autoincrement())
+  key       String   @unique
+  value     Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("settings")
+}
+
+model AmenitiesType {
+  id                       Int                        @id @default(autoincrement())
+  order                    Int?                       @default(0)
+  status                   Boolean                    @default(true)
+  createdAt                DateTime                   @default(now())
+  updatedAt                DateTime                   @updatedAt
+  amenitiesTypeTranslation AmenitiesTypeTranslation[]
+  amenities                Amenities[]
+
+  @@map("amenities_types")
+}
+
+model AmenitiesTypeTranslation {
+  id              Int           @id @default(autoincrement())
+  locale          String
+  name            String
+  description     String        @db.Text
+  amenitiesTypeId Int
+  amenitiesType   AmenitiesType @relation(fields: [amenitiesTypeId], references: [id], onDelete: Cascade)
+
+  @@unique([amenitiesTypeId, locale])
+  @@map("amenities_type_translations")
+}
+
+model Amenities {
+  id                   Int                    @id @default(autoincrement())
+  amenitiesTypeId      Int
+  icon                 String?
+  order                Int?                   @default(0)
+  status               Boolean                @default(true)
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
+  amenitiesType        AmenitiesType          @relation(fields: [amenitiesTypeId], references: [id], onDelete: Cascade)
+  amenitiesTranslation AmenitiesTranslation[]
+  properties           Property[]             @relation("PropertyAmenities")
+
+  @@map("amenities")
+}
+
+model AmenitiesTranslation {
+  id          Int       @id @default(autoincrement())
+  locale      String
+  name        String
+  description String    @db.Text
+  amenitiesId Int
+  amenities   Amenities @relation(fields: [amenitiesId], references: [id], onDelete: Cascade)
+
+  @@unique([amenitiesId, locale])
+  @@map("amenities_translations")
+}
+
+model PropertyType {
+  id        Int      @id @default(autoincrement())
+  icon      String?
+  order     Int?     @default(0)
+  status    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  propertyTypeTranslation PropertyTypeTranslation[]
+  property                Property[]
+
+  @@map("property_types")
+}
+
+model PropertyTypeTranslation {
+  id             Int          @id @default(autoincrement())
+  locale         String
+  name           String
+  description    String       @db.Text
+  propertyTypeId Int
+  propertyType   PropertyType @relation(fields: [propertyTypeId], references: [id], onDelete: Cascade)
+
+  @@unique([propertyTypeId, locale])
+  @@map("property_type_translations")
+}
+
+model SpaceType {
+  id                   Int                    @id @default(autoincrement())
+  icon                 String?
+  order                Int?                   @default(0)
+  status               Boolean                @default(true)
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
+  spaceTypeTranslation SpaceTypeTranslation[]
+  property             Property[]
+
+  @@map("space_types")
+}
+
+model SpaceTypeTranslation {
+  id          Int       @id @default(autoincrement())
+  locale      String
+  name        String
+  description String    @db.Text
+  spaceTypeId Int
+  spaceType   SpaceType @relation(fields: [spaceTypeId], references: [id], onDelete: Cascade)
+
+  @@unique([spaceTypeId, locale])
+  @@map("space_type_translations")
+}
+
+model BedType {
+  id                 Int                  @id @default(autoincrement())
+  order              Int?                 @default(0)
+  status             Boolean              @default(true)
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  bedTypeTranslation BedTypeTranslation[]
+
+  @@map("bed_types")
+}
+
+model BedTypeTranslation {
+  id        Int     @id @default(autoincrement())
+  locale    String
+  name      String
+  bedTypeId Int
+  bedType   BedType @relation(fields: [bedTypeId], references: [id], onDelete: Cascade)
+
+  @@unique([bedTypeId, locale])
+  @@map("bed_type_translations")
+}
+
+enum BookType {
+  perday
+  perhour
+}
+
+enum BookingType {
+  request
+  instant
+}
+
+model CancellationPolicy {
+  id                            Int                             @id @default(autoincrement())
+  beforeDays                    Int
+  beforeDayPriorRefund          Decimal?                        @default(0.00) @db.Decimal(12, 6)
+  afterDayPriorRefund           Decimal?                        @default(0.00) @db.Decimal(12, 6)
+  createdAt                     DateTime                        @default(now())
+  updatedAt                     DateTime                        @updatedAt
+  cancellationPolicyTranslation CancellationPolicyTranslation[]
+  Property                      Property[]
+  Booking                       Booking[]
+
+  @@map("cancellation_policies")
+}
+
+model CancellationPolicyTranslation {
+  id                   Int                @id @default(autoincrement())
+  locale               String
+  name                 String
+  description          String             @db.Text
+  cancellationPolicyId Int
+  cancellationPolicy   CancellationPolicy @relation(fields: [cancellationPolicyId], references: [id], onDelete: Cascade)
+
+  @@unique([cancellationPolicyId, locale])
+  @@map("cancellation_policy_translations")
+}
+
+enum ListingStatus {
+  Unlisted
+  Listed
+}
+
+model Property {
+  id                   String        @id @default(cuid())
+  // id                   Int           @id @default(autoincrement())
+  slug                 String?       @unique
+  hostId               String
+  propertyTypeId       Int?
+  spaceTypeId          Int?
+  accommodates         Int?
+  bookType             BookType      @default(perday)
+  bookingType          BookingType   @default(request)
+  minimumStay          Int?
+  cancellationPolicyId Int?
+  bedrooms             Int?
+  bedrooms_data        Json?
+  bathrooms            Int?
+  status               ListingStatus @default(Unlisted)
+  isApproved           Boolean       @default(false)
+  recommended          Boolean       @default(false)
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+  deletedAt            DateTime?
+
+  host                   User                    @relation(fields: [hostId], references: [id])
+  propertyType           PropertyType?           @relation(fields: [propertyTypeId], references: [id])
+  spaceType              SpaceType?              @relation(fields: [spaceTypeId], references: [id])
+  amenities              Amenities[]             @relation("PropertyAmenities")
+  cancellationPolicy     CancellationPolicy?     @relation(fields: [cancellationPolicyId], references: [id])
+  propertyDescription    PropertyDescription?
+  propertyRulesAndManual PropertyRulesAndManual?
+  checkInOutInstruction  CheckInOutInstruction?
+  propertyAddress        PropertyAddress?
+  propertyPrice          PropertyPrice?
+  propertyImages         PropertyImages[]
+  propertyDates          PropertyDates[]
+  propertySteps          PropertySteps?
+  reviews                Reviews[]
+  bookings               Booking[]
+  specialOffer           SpecialOffer[]
+  conversation           Conversation[]
+  coHosts                PropertyCoHost[]
+  wishlist               Wishlist[]
+  recentlyViewed         RecentlyViewed[]
+
+  @@map("properties")
+}
+
+enum coHostStatus {
+  ACCEPTED
+  EXPIRED
+  PENDING
+}
+
+model PropertyCoHost {
+  id          Int          @id @default(autoincrement())
+  propertyId  String
+  userId      String
+  permissions Json
+  status      coHostStatus @default(PENDING)
+  expiredAt   DateTime
+  createdAt   DateTime     @default(now())
+  property    Property     @relation(fields: [propertyId], references: [id])
+  user        User         @relation(fields: [userId], references: [id])
+
+  @@unique([propertyId, userId]) // prevent duplicate co-host assignment
+  @@map("property_co_hosts")
+}
+
+model PropertyDescription {
+  id         Int    @id @default(autoincrement())
+  propertyId String @unique
+
+  property                       Property                         @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  propertyDescriptionTranslation PropertyDescriptionTranslation[]
+
+  @@map("property_descriptions")
+}
+
+model PropertyDescriptionTranslation {
+  id                    Int                 @id @default(autoincrement())
+  propertyDescriptionId Int
+  locale                String
+  name                  String?
+  description           String?             @db.Text
+  aboutPlace            String?             @db.Text
+  placeIsGreatFor       String?             @db.Text
+  guestCanAccess        String?             @db.Text
+  interactionGuests     String?             @db.Text
+  other                 String?             @db.Text
+  aboutNeighborhood     String?             @db.Text
+  getAround             String?             @db.Text
+  propertyDescription   PropertyDescription @relation(fields: [propertyDescriptionId], references: [id], onDelete: Cascade)
+
+  @@unique([propertyDescriptionId, locale])
+  @@map("property_description_translations")
+}
+
+model PropertyAddress {
+  id           Int      @id @default(autoincrement())
+  propertyId   String   @unique
+  countryId    Int?
+  cityId       Int?
+  stateId      Int?
+  postal_code  String?
+  addressLine1 String?
+  addressLine2 String?
+  latitude     Decimal? @db.Decimal(12, 6)
+  longitude    Decimal? @db.Decimal(12, 6)
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  country  Country? @relation(fields: [countryId], references: [id])
+  city     City?    @relation(fields: [cityId], references: [id])
+  state    State?   @relation(fields: [stateId], references: [id])
+
+  @@map("property_addresses")
+}
+
+model PropertyImages {
+  id         Int     @id @default(autoincrement())
+  propertyId String
+  image      String?
+  message    String?
+  serial     Int?
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@map("property_images")
+}
+
+model PropertyPrice {
+  id              Int      @id @default(autoincrement())
+  propertyId      String   @unique
+  currencyId      Int
+  price           Decimal? @default(0.00) @db.Decimal(12, 6)
+  weeklyDiscount  Int?     @default(0)
+  monthlyDiscount Int?     @default(0)
+  cleaningFee     Decimal? @default(0.00) @db.Decimal(12, 6)
+  guestAfter      Int?     @default(0)
+  guestAfterFee   Decimal? @default(0.00) @db.Decimal(12, 6)
+  securityFee     Decimal? @default(0.00) @db.Decimal(12, 6)
+  weekendPrice    Decimal? @default(0.00) @db.Decimal(12, 6)
+  property        Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  currency        Currency @relation(fields: [currencyId], references: [id], onDelete: Cascade)
+
+  @@map("property_prices")
+}
+
+model PropertyDates {
+  id         Int      @id @default(autoincrement())
+  propertyId String
+  date       DateTime
+  price      Decimal? @default(0.00) @db.Decimal(12, 6)
+  status     Boolean? @default(false)
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@unique([propertyId, date])
+  @@map("property_dates")
+}
+
+model PropertyRulesAndManual {
+  id                                Int                                 @id @default(autoincrement())
+  propertyId                        String                              @unique
+  eventsAllowed                     Boolean?                            @default(false)
+  smokingAllowed                    Boolean?                            @default(false)
+  quietHours                        Boolean?                            @default(false)
+  commercialAllowed                 Boolean?                            @default(false)
+  startQuietHoursTime               String?
+  endQuietHoursTime                 String?
+  startCheckInTime                  String?
+  endCheckInTime                    String?
+  checkOutTime                      String?
+  guest                             Int?
+  wifiName                          String?
+  wifiPassword                      String?
+  createdAt                         DateTime                            @default(now())
+  updatedAt                         DateTime                            @updatedAt
+  property                          Property                            @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  propertyRulesAndManualTranslation PropertyRulesAndManualTranslation[]
+
+  @@map("property_rules_and_manuals")
+}
+
+model PropertyRulesAndManualTranslation {
+  id                     Int                    @id @default(autoincrement())
+  propertyRulesId        Int
+  locale                 String
+  additionalRules        String?                @db.Text
+  directions             String?                @db.Text
+  houseManual            String?                @db.Text
+  propertyRulesAndManual PropertyRulesAndManual @relation(fields: [propertyRulesId], references: [id], onDelete: Cascade)
+
+  @@unique([propertyRulesId, locale])
+  @@map("property_rules_and_manual_translations")
+}
+
+model CheckInOutInstruction {
+  id         Int    @id @default(autoincrement())
+  propertyId String @unique
+
+  // Check-in instructions
+  smartLock                   Boolean @default(false)
+  smartLockInstruction        String? @db.Text
+  keypad                      Boolean @default(false)
+  keypadInstruction           String? @db.Text
+  lockbox                     Boolean @default(false)
+  lockboxInstruction          String? @db.Text
+  buildingStaff               Boolean @default(false)
+  buildingStaffInstruction    String? @db.Text
+  inPersonGreeting            Boolean @default(false)
+  inPersonGreetingInstruction String? @db.Text
+  other                       Boolean @default(false)
+  otherInstruction            String? @db.Text
+
+  // Check-out instructions
+  gatherUsedTowels              Boolean @default(false)
+  gatherUsedTowelsInstruction   String? @db.Text
+  throwTrashAway                Boolean @default(false)
+  throwTrashAwayInstruction     String? @db.Text
+  turnThingsOff                 Boolean @default(false)
+  turnThingsOffInstruction      String? @db.Text
+  lockUp                        Boolean @default(false)
+  lockUpInstruction             String? @db.Text
+  returnKeys                    Boolean @default(false)
+  returnKeysInstruction         String? @db.Text
+  additionalRequests            Boolean @default(false)
+  additionalRequestsInstruction String? @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  property  Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@map("check_in_out_instructions")
+}
+
+model PropertySteps {
+  id                 Int      @id @default(autoincrement())
+  propertyId         String   @unique
+  propertyType       Boolean  @default(false)
+  spaceType          Boolean  @default(false)
+  location           Boolean  @default(false)
+  floorPlan          Boolean  @default(false)
+  amenities          Boolean  @default(false)
+  photos             Boolean  @default(false)
+  descriptions       Boolean  @default(false)
+  booking            Boolean  @default(false)
+  price              Boolean  @default(false)
+  discounts          Boolean  @default(false)
+  cancellationPolicy Boolean  @default(false)
+  property           Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@map("property_steps")
+}
+
+model PropertyFees {
+  id            Int      @id @default(autoincrement())
+  guestFee      Decimal? @default(0.00) @db.Decimal(12, 6)
+  hostFee       Decimal? @default(0.00) @db.Decimal(12, 6)
+  moreThenSeven Decimal? @default(0.00) @db.Decimal(12, 6)
+  lessThenSeven Decimal? @default(0.00) @db.Decimal(12, 6)
+  hostPenalty   Decimal? @default(0.00) @db.Decimal(12, 6)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("property_fees")
+}
+
+model Wishlist {
+  id         Int      @id @default(autoincrement())
+  userId     String
+  propertyId String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("wishlists")
+}
+
+model RecentlyViewed {
+  id         Int      @id @default(autoincrement())
+  userId     String
+  propertyId String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, propertyId], name: "userId_propertyId")
+  @@map("recently_viewed")
+}
+
+model Reviews {
+  id         Int    @id @default(autoincrement())
+  senderId   String
+  receiverId String
+  bookingId  String
+  propertyId String
+
+  message            String?   @db.Text
+  secretFeedback     String?   @db.Text
+  improveMessage     String?   @db.Text
+  publicResponse     String?   @db.Text
+  publicResponseDate DateTime?
+  overallRating      Decimal   @default(0.0) @db.Decimal(12, 6)
+  recommend          Boolean   @default(false)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  property       Property       @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  booking        Booking        @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  reviewSender   User           @relation("ReviewSender", fields: [senderId], references: [id])
+  reviewReceiver User           @relation("ReviewReceiver", fields: [receiverId], references: [id])
+  ratings        ReviewRating[]
+
+  @@unique([bookingId, senderId])
+  @@map("reviews")
+}
+
+model ReviewRating {
+  id       Int     @id @default(autoincrement())
+  reviewId Int
+  category String // e.g., "accuracy", "cleanliness", "communication"
+  score    Decimal @default(0.0) @db.Decimal(12, 6)
+  message  String? @db.Text
+
+  review Reviews @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  @@unique([reviewId, category])
+  @@map("review_ratings")
+}
+
+enum DiscountType {
+  none
+  weekly
+  monthly
+}
+
+enum BookingStatus {
+  PENDING
+  ACCEPTED
+  CONFIRMED
+  DECLINED
+  EXPIRED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  CANCELLED
+  UNATTEMPTED
+  EXPIRED
+}
+
+enum PayoutStatus {
+  PENDING
+  SENT
+  FAILED
+  CANCELLED
+}
+
+enum DeclinedBy {
+  Host
+  Guest
+}
+
+enum BookingRequestType {
+  INQUIRY // Just asking, not committed
+  REQUEST // Sent a request to host, needs response
+  BOOKING // CONFIRMED booking (after acceptance + payment)
+  SpecialOffer
+}
+
+model Booking {
+  id                         String       @id @default(cuid())
+  propertyId                 String
+  currencyId                 Int
+  exchangeRateToBase         Decimal?     @db.Decimal(12, 6)
+  exchangeRatePropertyToBase Decimal?     @db.Decimal(12, 6)
+  hostId                     String
+  guestId                    String
+  startDate                  DateTime
+  endDate                    DateTime
+  guests                     Json?
+  totalNight                 Int?
+  cleaningCharge             Decimal?     @default(0.00) @db.Decimal(12, 6)
+  extraGuestCharge           Decimal?     @default(0.00) @db.Decimal(12, 6)
+  totalGuestFee              Decimal?     @default(0.00) @db.Decimal(12, 6)
+  totalHostFee               Decimal?     @default(0.00) @db.Decimal(12, 6)
+  totalPrice                 Decimal?     @default(0.00) @db.Decimal(12, 6)
+  totalDiscount              Decimal?     @default(0.00) @db.Decimal(12, 6)
+  discountType               DiscountType @default(none)
+  grandTotal                 Decimal?     @default(0.00) @db.Decimal(12, 6)
+
+  bookingStatus        BookingStatus       @default(PENDING)
+  bookingType          BookingRequestType?
+  paymentStatus        PaymentStatus       @default(PENDING)
+  payoutStatus         PayoutStatus        @default(PENDING)
+  cancellationPolicyId Int?
+  confirmationCode     String?             @unique
+  confirmedAt          DateTime?
+  acceptedAt           DateTime?
+  expiredAt            DateTime?
+  declinedAt           DateTime?
+  declinedBy           DeclinedBy?
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+  deletedAt            DateTime?
+
+  property            Property              @relation(fields: [propertyId], references: [id], onDelete: Restrict)
+  host                User                  @relation("Host", fields: [hostId], references: [id])
+  guest               User                  @relation("Guest", fields: [guestId], references: [id])
+  currency            Currency              @relation(fields: [currencyId], references: [id], onDelete: Restrict)
+  cancellationPolicy  CancellationPolicy?   @relation(fields: [cancellationPolicyId], references: [id])
+  reviews             Reviews[]
+  bookingDates        BookingDates[]
+  specialOffer        SpecialOffer?
+  conversationBooking ConversationBooking[]
+  payouts             Payouts?
+  payment             Payment[]
+
+  @@map("bookings")
+}
+
+model BookingDates {
+  id        Int      @id @default(autoincrement())
+  bookingId String
+  date      DateTime
+  price     Decimal? @default(0.00) @db.Decimal(12, 6)
+  booking   Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@unique([bookingId, date])
+  @@map("booking_dates")
+}
+
+model SpecialOffer {
+  id         Int         @id @default(autoincrement())
+  bookingId  String?     @unique
+  propertyId String
+  price      Decimal     @db.Decimal(12, 6)
+  guestFee   Decimal?    @default(0.00) @db.Decimal(12, 6)
+  hostFee    Decimal?    @default(0.00) @db.Decimal(12, 6)
+  startDate  DateTime?
+  endDate    DateTime?
+  totalNight Int?
+  guests     Json?
+  status     OfferStatus @default(PENDING)
+  createdAt  DateTime    @default(now())
+  expiredAt  DateTime? // = createdAt + 24h
+  updatedAt  DateTime    @updatedAt
+
+  property Property @relation(fields: [propertyId], references: [id])
+  booking  Booking? @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@map("special_offers")
+}
+
+enum OfferStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  EXPIRED
+}
+
+model Conversation {
+  id            String    @id @default(cuid())
+  // id            Int       @id @default(autoincrement())
+  propertyId    String
+  lastMessageId Int?      @unique
+  lastMessageAt DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  property    Property             @relation(fields: [propertyId], references: [id])
+  lastMessage ConversationMessage? @relation("LastMessage", fields: [lastMessageId], references: [id])
+
+  participants         ConversationParticipant[]
+  conversationbookings ConversationBooking[]
+
+  @@map("conversations")
+}
+
+model ConversationBooking {
+  id             Int    @id @default(autoincrement())
+  conversationId String
+  bookingId      String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  conversation Conversation          @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  booking      Booking?              @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  messages     ConversationMessage[]
+
+  @@map("conversation_bookings")
+}
+
+model ConversationParticipant {
+  id             Int             @id @default(autoincrement())
+  conversationId String
+  userId         String
+  role           ParticipantRole // HOST, GUEST, ADMIN, etc.
+  joinedAt       DateTime        @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  participant  User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([conversationId, userId]) // no duplicate memberships
+  @@map("conversation_participants")
+}
+
+model ConversationMessage {
+  id                    Int         @id @default(autoincrement())
+  conversationBookingId Int
+  senderId              String
+  text                  String      @db.Text
+  metadata              Json?
+  type                  MessageType @default(TEXT)
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+
+  conversationBooking ConversationBooking @relation(fields: [conversationBookingId], references: [id], onDelete: Cascade)
+  sender              User                @relation("MessageSender", fields: [senderId], references: [id])
+  reads               MessageRead[]
+  lastMessageOf       Conversation?       @relation("LastMessage")
+
+  @@map("conversation_messages")
+}
+
+model MessageRead {
+  id        Int      @id @default(autoincrement())
+  messageId Int
+  userId    String
+  readAt    DateTime @default(now())
+
+  message ConversationMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user    User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("message_reads")
+}
+
+enum MessageType {
+  TEXT
+  SYSTEM
+}
+
+enum ParticipantRole {
+  HOST
+  GUEST
+  ADMIN
+}
+
+model Payment {
+  id              String        @id @default(cuid())
+  userId          String
+  bookingId       String
+  transactionId   String        @unique
+  amount          Decimal       @default(0.00) @db.Decimal(12, 6)
+  status          PaymentStatus @default(PENDING)
+  transactionDate DateTime?
+  rawResponse     Json?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  booking Booking? @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@map("payments")
+}
+
+model Notification {
+  id        Int              @id @default(autoincrement())
+  userId    String
+  title     String
+  body      String
+  icon      String
+  link      String?
+  type      NotificationType
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  user      User             @relation(fields: [userId], references: [id])
+
+  @@map("notifications")
+}
+
+enum NotificationType {
+  general
+}

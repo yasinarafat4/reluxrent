@@ -1,0 +1,23 @@
+npx prettier --check .
+npx prettier --write .
+npx prettier --write "**/*.{js,ts}"
+npx prettier --write src/index.js
+npx prettier --config .prettierrc --write .
+
+
+npx eslint .
+npx eslint src/
+npx eslint src/index.js
+npx eslint . --fix
+npx eslint "**/*.{js,jsx}"
+npx eslint -c .eslintrc.js src/
+npx eslint . --quiet
+
+
+npx prisma init
+npx prisma generate
+npx prisma db push
+npx prisma migrate dev --name your_migration_name
+npx prisma migrate deploy
+npx prisma studio
+npx prisma format

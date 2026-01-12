@@ -1,0 +1,180 @@
+<html lang='en'>
+  <head>
+    <meta charset='UTF-8' />
+    <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+    <title>{{subject}}</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: #f7f7f7;
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        color: #222;
+      }
+      .container {
+        max-width: 600px;
+        margin: 40px auto;
+        background-color: #fff;
+        border-radius: 10px;
+        overflow: hidden;
+        border: 1px solid #eee;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+      }
+      .header {
+        padding: 10px 30px;
+        border-bottom: 1px solid #eee;
+      }
+      .header img {
+        height: 50px;
+      }
+      .content {
+        padding: 30px;
+      }
+      h1 {
+        font-size: 25px;
+        margin-bottom: 10px;
+      }
+      h2 {
+        font-size: 22px;
+        margin-bottom: 10px;
+      }
+      p {
+        font-size: 16px;
+        line-height: 1.6;
+        margin: 8px 0;
+      }
+      .link {
+        margin-top: 10px;
+        color: #ff385c;
+        text-decoration: none;
+        font-weight: 600;
+      }
+      .link:hover {
+        color: #e03151;
+      }
+      .note {
+        color: #888;
+        font-size: 14px;
+        margin-top: 12px;
+      }
+      .footer {
+        text-align: start;
+        padding: 30px;
+        color: #666;
+        font-size: 13px;
+      }
+      .app-links img {
+        height: 36px;
+        margin: 10px 4px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class='container'>
+      <div class='header'>
+        <img src='https://reluxrent.com/images/logos/reluxrent.png' alt='Reluxrent' />
+      </div>
+
+      <div class='content'>
+        <h2>{{subject}}</h2>
+        <p>Hi {{guestName}},</p>
+        <p style='font-size:16px; color:#555555; line-height:1.6;'>
+          Your booking at
+          <strong>"{{propertyName}}"</strong>
+          has been successfully confirmed 🎉
+        </p>
+
+        <p style='font-size:16px; color:#555555; line-height:1.6;'>
+          You'll be staying from
+          <strong>{{checkIn}}</strong>
+          to
+          <strong>{{checkOut}}</strong>
+          for
+          <strong>{{totalNight}} {{nightText}}</strong>. Your host,
+          <strong>{{hostName}}</strong>, will be ready to welcome you!
+        </p>
+
+        <!-- Booking Summary -->
+        <h3 style='font-size:18px; color:#333; margin-top:30px;'>🧾 Booking Summary</h3>
+        <table cellpadding='8' cellspacing='0' style='width:100%; border:1px solid #eee; margin:20px 0; border-radius:6px;'>
+          <tr style='background:#fafafa;'>
+            <td style='font-weight:bold; color:#333;'>Booking ID</td>
+            <td style='color:#555;'>#{{bookingId}}</td>
+          </tr>
+          <tr>
+            <td style='font-weight:bold; color:#333;'>Property</td>
+            <td style='color:#555;'>{{propertyName}}</td>
+          </tr>
+          <tr>
+            <td style='font-weight:bold; color:#333;'>Check-In</td>
+            <td style='color:#555;'>{{checkIn}}</td>
+          </tr>
+          <tr>
+            <td style='font-weight:bold; color:#333;'>Check-Out</td>
+            <td style='color:#555;'>{{checkOut}}</td>
+          </tr>
+          <tr>
+            <td style='font-weight:bold; color:#333;'>Total Nights</td>
+            <td style='color:#555;'>{{totalNight}} {{nightText}}</td>
+          </tr>
+          <tr>
+            <td style='font-weight:bold; color:#333;'>Total Price</td>
+            <td style='color:#555;'>{{totalPrice}}</td>
+          </tr>
+        </table>
+
+        <!-- Payment Details -->
+        <h3 style='font-size:18px; color:#333; margin-top:30px;'>💳 Payment Details</h3>
+        <table cellpadding='8' cellspacing='0' style='width:100%; border:1px solid #eee; margin:20px 0; border-radius:6px;'>
+          <tr style='background:#fafafa;'>
+            <td style='font-weight:bold; color:#333;'>Payment Date</td>
+            <td style='color:#555;'>{{paymentDate}}</td>
+          </tr>
+          <tr>
+            <td style='font-weight:bold; color:#333;'>Method</td>
+            <td style='color:#555;'>{{paymentMethod}}</td>
+          </tr>
+          <tr>
+            <td style='font-weight:bold; color:#333;'>Status</td>
+            <td style='color:#555;'>{{paymentStatus}}</td>
+          </tr>
+          <tr>
+            <td style='font-weight:bold; color:#333;'>Amount Paid</td>
+            <td style='color:#555;'>৳{{paymentAmount}}</td>
+          </tr>
+        </table>
+
+        <p style='font-size:16px; color:#555;'>
+          You can view your reservation details, contact your host, or manage your trip anytime by clicking below.
+        </p>
+
+        <!-- CTA -->
+        <div style='text-align:center; margin:30px 0;'>
+          <a
+            href='https://reluxrent.com/guest/bookings/details/{{bookingId}}'
+            style='background:#ff5a5f; color:#fff; text-decoration:none; padding:12px 24px; border-radius:6px; font-weight:bold; display:inline-block;'
+          >
+            View My Trip
+          </a>
+        </div>
+
+        <p class='note'>
+          Need to make changes or ask your host something? You can message them directly from your booking page.
+        </p>
+      </div>
+
+      <div class='footer'>
+        <p>Thanks,<br />The Reluxrent Team</p>
+        <hr style='color: #eee;' />
+        <div class='app-links'>
+          <p style='font-weight: 600;'>Get the Reluxrent app</p>
+          <a href='#'><img src='https://reluxrent.com/images/logos/app-store.png' alt='App Store' /></a>
+          <a href='#'><img src='https://reluxrent.com/images/logos/google-play.png' alt='Google Play' /></a>
+        </div>
+        <p style='margin-top: 16px; font-size: 12px; font-weight: 500;'>
+          <a href='https://reluxrent.com/help/privacy-policy' style='color:#ff385c; text-decoration:none;'>View Reluxrent's Privacy Policy</a>
+        </p>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,59 @@
+services:
+  db:
+    image: mysql:8
+    container_name: mysql-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: reluxrent
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    restart: always
+    ports:
+      - "8080:80"
+    environment:
+      PMA_HOST: db
+      MYSQL_ROOT_PASSWORD: root
+      UPLOAD_LIMIT: 50M
+    depends_on:
+      - db
+
+volumes:
+  db_data:
+
+
+# services:
+#   db:
+#     image: postgres:15
+#     container_name: postgres-db
+#     restart: always
+#     environment:
+#       POSTGRES_USER: root
+#       POSTGRES_PASSWORD: root
+#       POSTGRES_DB: reluxrent
+#     ports:
+#       - "5432:5432"
+#     volumes:
+#       - pg_data:/var/lib/postgresql/data
+
+#   pgadmin:
+#     image: dpage/pgadmin4
+#     container_name: pgadmin
+#     restart: always
+#     environment:
+#       PGADMIN_DEFAULT_EMAIL: admin@admin.com
+#       PGADMIN_DEFAULT_PASSWORD: admin
+#       UPLOAD_LIMIT: 50M
+#     ports:
+#       - "8080:80"
+#     depends_on:
+#       - db
+
+# volumes:
+#   pg_data:
